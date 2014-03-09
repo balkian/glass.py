@@ -23,14 +23,14 @@ class User(object):
         self.app = app
         self.token = token
         self.refresh_token = refresh_token
-        
+
         self.session = self.app.oauth.get_session(token=self.token)
         self.session.headers.update({'Content-Type': 'application/json'})
 
         self.timeline = Timeline(self)
         self.contacts = Contacts(self)
 
-    def refresh_token(self):
+    def refresh_tokens(self):
         """
         Refresh user token and return tokens dict
         """
@@ -73,7 +73,7 @@ class User(object):
         """
         r = self.request("GET", "oauth2/v1/userinfo", params={'alt': 'json'})
         profile = r.json()
-        
+
         if (profile is None
         or not "given_name" in profile
         or not "email" in profile
@@ -89,7 +89,7 @@ class User(object):
         """
         r = self.request("GET", "mirror/v1/locations/%s" % (lid))
         location = r.json()
-        
+
         if (location is None
         or not "latitude" in location
         or not "longitude" in location):
