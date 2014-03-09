@@ -1,5 +1,4 @@
 # Libs imports
-import flask
 import rauth
 import json
 import os
@@ -20,17 +19,27 @@ OAUTH_SCOPES = [
 ]
 
 class Application(object):
-    def __init__(self, 
+    def __init__(self,
                 name="",
                 client_id=None,
                 client_secret=None,
                 scopes=OAUTH_SCOPES,
                 debug=True,
                 template_folder='templates',
-                **flaskargs):
+                **extraargs):
         self.name = name
         self.debug = debug
-        self.web = flask.Flask(self.name, **flaskargs)
+        if "web" in extraargs:
+            self.web = extraargs['web']
+        else:
+            import flask
+            from jinja2 import Template
+            self.web = flask.Flask(self.name, **extraargs)
+            self.web.redirect = flask.redirect
+            self.web.Template = Template
+            def get_request(*args, **kwargs):
+                return flask.request.args
+            self.web.get_request = get_request
         self.template_folder = template_folder
         self.logger = self.web.logger
         self.scopes = scopes
@@ -46,7 +55,7 @@ class Application(object):
     def oauth_redirect_uri(self):
         return "%s://%s/glass/oauth/callback" % ("https" if self.secure else "http", self.host)
 
-    def _oauth_authorize(self):
+    def _oauth_authorize(self, *args, **kwargs):
         """
         (view) Display the authorization window for Google Glass
         """
@@ -59,14 +68,15 @@ class Application(object):
             'approval_prompt': 'force'
         }
         url = self.oauth.get_authorize_url(**params)
-        return flask.redirect(url)
+        return self.web.redirect(url)
 
-    def _oauth_callback(self):
+    def _oauth_callback(self, *args, **kwargs):
         """
         (view) Callback for the oauth
         """
+        request = self.web.get_request(*args, **kwargs)
         tokens = self.oauth.get_raw_access_token(data={
-            'code': flask.request.args.get('code', ''),
+            'code': request.get('code', ''),
             'redirect_uri': self.oauth_redirect_uri,
             'grant_type': 'authorization_code'
         }).json()
@@ -99,5 +109,4 @@ class Application(object):
     def run(self, **kwargs):
         self.prepare(**kwargs)
         self.web.run(port=self.port, host=("0.0.0.0" if self.public else "127.0.0.1"))
-
 

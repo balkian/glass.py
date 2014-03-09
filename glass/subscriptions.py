@@ -1,7 +1,6 @@
 # Python imports
 import hashlib
 import json
-import flask
 from uuid import uuid4
 
 # Local imports
@@ -65,7 +64,7 @@ class Subscriptions(object):
         Add a function to an endpoint
 
         :param endpoint: the endpoint name (ex: "login")
-        :param callback: the endpoint callback to add 
+        :param callback: the endpoint callback to add
         """
         if not endpoint in self.endpoints:
             self.endpoints[endpoint] = []

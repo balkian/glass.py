@@ -1,7 +1,6 @@
 # Python imports
 import os
 import json
-from jinja2 import Template
 
 # Local imports
 import exceptions
@@ -26,7 +25,7 @@ class Timeline(object):
         """
         r = self.user.request("GET", "/mirror/v1/timeline/%s" % (cardid))
         card = r.json()
-        
+
         if (card is None or not "id" in card):
             raise exceptions.TimelineException("Error getting card from timeline ", card)
         return card
@@ -45,7 +44,7 @@ class Timeline(object):
         """
         r = self.user.request("PATCH", "/mirror/v1/timeline/%s" % (cardid), data=json.dumps(kwargs))
         card = r.json()
-        
+
         if (card is None or not "id" in card):
             raise exceptions.TimelineException("Error patching card in timeline ", card)
         return card
@@ -57,7 +56,7 @@ class Timeline(object):
         """
         r = self.user.request("GET", "/mirror/v1/timeline", data=kwargs)
         cards = r.json()
-        
+
         if (cards is None or not "items" in cards):
             raise exceptions.TimelineException("Error listing cards in timeline ", cards)
         return cards["items"]
@@ -72,7 +71,7 @@ class Timeline(object):
         """
         r = self.user.request("POST", "/mirror/v1/timeline", data=json.dumps(kwargs))
         card = r.json()
-        
+
         if (card is None or not "id" in card):
             raise exceptions.TimelineException("Error posting card to timeline ", card)
         return card
@@ -85,6 +84,7 @@ class Timeline(object):
         """
         path = os.path.join(self.app.template_folder, template)
         with open(path, "r") as templatefile:
+            Template = self.app.Template
             template = Template(templatefile.read())
             output = template.render(**kwargs)
             print output
